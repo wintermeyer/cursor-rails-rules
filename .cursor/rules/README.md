@@ -6,32 +6,49 @@ This directory contains the rules and guidelines for our Rails 8 project. The ru
 
 ```
 .cursor/rules/
-├── README.md                    # This file
-├── base/                        # Base configuration rules
-│   ├── rails8.mdc               # Rails 8 specific settings
-│   ├── ruby.mdc                 # Ruby language settings
-│   └── tailwind.mdc             # TailwindCSS configuration
-├── conventions/                 # Coding conventions
-│   ├── controllers.mdc          # Controller standards
-│   ├── database.mdc             # Database conventions
-│   ├── models.mdc               # Model standards
-│   ├── views.mdc                # View standards
-│   └── bin_rails.mdc            # bin/rails usage
-├── i18n/                        # Internationalization rules
-│   ├── base.mdc                 # Base I18n configuration
-│   ├── languages/               # Language-specific rules
-│   │   └── german.mdc           # German translation specifics
-│   └── patterns.mdc             # Common translation patterns
-└── testing/                     # Testing guidelines
-    ├── base.mdc                 # Base testing configuration
-    ├── factory_bot.mdc          # Factory Bot standards
-    ├── faker.mdc                # Faker data standards
-    ├── language.mdc             # Language testing standards
-    ├── page_availability.mdc    # Page testing standards
-    ├── quality.mdc              # Code quality standards
-    ├── system.mdc               # System testing standards
-    └── unit.mdc                 # Unit testing standards
+├── README.md                        # This file
+├── base-rails8.mdc                  # Rails 8 specific settings
+├── base-ruby.mdc                    # Ruby language settings
+├── base-tailwind.mdc                # TailwindCSS configuration
+├── conventions-bin_rails.mdc        # bin/rails usage
+├── conventions-database.mdc         # Database conventions
+├── conventions-views.mdc            # View standards
+├── i18n-base.mdc                    # Base I18n configuration
+├── i18n-german.mdc                  # German translation specifics
+├── i18n-patterns.mdc                # Common translation patterns
+├── system.mdc                       # System testing standards
+├── testing-base.mdc                 # Base testing configuration
+├── testing-factory_bot.mdc          # Factory Bot standards
+├── testing-faker.mdc                # Faker data standards
+├── testing-language.mdc             # Language testing standards
+├── testing-page_availability.mdc    # Page testing standards
+├── testing-quality.mdc              # Code quality standards
+└── testing-unit.mdc                 # Unit testing standards
 ```
+
+## Categories
+
+The rules are organized into the following categories:
+
+1. **Base Rules** (`base-*.mdc`)
+   - Project configuration
+   - Language settings
+   - Framework standards
+
+2. **Conventions** (`conventions-*.mdc`)
+   - Coding standards
+   - Database practices
+   - View guidelines
+
+3. **Internationalization** (`i18n-*.mdc`)
+   - Translation standards
+   - Language-specific rules
+   - Common patterns
+
+4. **Testing** (`testing-*.mdc`)
+   - Testing standards
+   - Quality assurance
+   - Test data management
 
 ## Rule Format
 
@@ -40,27 +57,66 @@ Each rule file follows this format:
 ```markdown
 # Rule Title
 
-Standards for [topic] in Rails 8.
-Applies to: [glob pattern]
-Optional: [conditions if rule is optional]
+## Overview
 
-## Section
+Brief description of what this rule enforces and why it's important.
 
-1. Subsection
-[Content in Markdown format]
+## Rule Details
+
+Specific requirements and guidelines that must be followed.
+
+## Examples
+
+### Good Examples
+Examples of correct implementation.
+
+### Bad Examples
+Examples of what to avoid.
+
+## Configuration
+
+Any necessary configuration details.
+
+## When to Use
+
+Specific scenarios where this rule applies.
+
+## Benefits
+
+List of benefits from following this rule.
+
+## Implementation Guide
+
+Step-by-step guide for implementing the rule.
+
+## Common Issues and Solutions
+
+Solutions for frequently encountered problems.
+
+## Related Rules
+
+Links to related rules.
+
+## References
+
+Links to relevant documentation.
 ```
 
 ## Usage
 
-1. Rules are automatically applied to files matching their glob patterns
+1. Rules are automatically applied to files matching their patterns
 2. Multiple rules can apply to the same file
-3. Rules are enforced in order of specificity (base -> conventions -> specific)
-4. Optional rules only apply when their conditions are met
+3. Rules are enforced in order of specificity:
+   - Base rules (general project configuration)
+   - Convention rules (coding standards)
+   - Specific rules (feature-specific requirements)
+4. Each rule is documented with examples and implementation guides
 
 ## Maintenance
 
-- Keep rules DRY (Don't Repeat Yourself)
-- Use references to avoid duplication
 - Keep rules focused and specific
-- Document changes in this README
-- Test rules for conflicts before committing 
+- Include practical examples
+- Document changes in commit messages
+- Test rules before committing
+- Update related rules when making changes
+- Keep documentation up to date 
