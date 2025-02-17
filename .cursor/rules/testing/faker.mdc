@@ -1,0 +1,212 @@
+# Faker Standards
+
+Standards for using Faker gem to generate test data in Rails 8.
+Applies to: test/**/*.rb, test/factories/**/*.rb
+
+## Configuration
+
+1. Setup
+```ruby
+# Gemfile
+group :test do
+  gem "faker", "~> 3.2"
+end
+
+# test/test_helper.rb
+require "faker"
+
+# Set a fixed seed for deterministic data generation
+Faker::Config.random = Random.new(42)
+```
+
+## Usage Guidelines
+
+1. When to Use Faker
+- All personal information (names, emails, addresses)
+- All business data (products, prices, descriptions)
+- All dates and times (except fixed dates)
+- All content (articles, comments, posts)
+- All identifiers (except fixed IDs)
+
+2. When NOT to Use Faker
+- Primary keys or foreign keys
+- Fixed enumeration values
+- Status flags or boolean fields
+- Test-specific values needed for assertions
+
+## Common Patterns
+
+1. Personal Information
+```ruby
+FactoryBot.define do
+  factory :user do
+    first_name { Faker::Name.first_name }
+    last_name { Faker::Name.last_name }
+    email { Faker::Internet.email(name: "#{first_name} #{last_name}") }
+    phone { Faker::PhoneNumber.phone_number }
+    date_of_birth { Faker::Date.birthday(min_age: 18, max_age: 65) }
+    bio { Faker::Lorem.paragraph(sentence_count: 2) }
+  end
+end
+```
+
+2. Business Data
+```ruby
+FactoryBot.define do
+  factory :product do
+    name { Faker::Commerce.product_name }
+    description { Faker::Lorem.paragraph }
+    price { Faker::Commerce.price(range: 10.0..1000.0) }
+    sku { Faker::Barcode.ean }
+    category { Faker::Commerce.department }
+    brand { Faker::Company.name }
+  end
+  
+  factory :company do
+    name { Faker::Company.name }
+    catch_phrase { Faker::Company.catch_phrase }
+    industry { Faker::Company.industry }
+    website { Faker::Internet.url }
+    founded_at { Faker::Date.between(from: 20.years.ago, to: 1.year.ago) }
+  end
+end
+```
+
+3. Content Generation
+```ruby
+FactoryBot.define do
+  factory :article do
+    title { Faker::Lorem.sentence(word_count: 4) }
+    content { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
+    excerpt { Faker::Lorem.paragraph }
+    author_name { Faker::Name.name }
+    published_at { Faker::Time.between(from: 1.year.ago, to: Time.current) }
+    
+    trait :with_tags do
+      after(:build) do |article|
+        article.tags = [
+          Faker::Lorem.word,
+          Faker::Lorem.word,
+          Faker::Lorem.word
+        ].uniq
+      end
+    end
+  end
+  
+  factory :comment do
+    content { Faker::Lorem.paragraph }
+    author_name { Faker::Internet.username }
+    author_email { Faker::Internet.email }
+    ip_address { Faker::Internet.ip_v4_address }
+  end
+end
+```
+
+4. Address Information
+```ruby
+FactoryBot.define do
+  factory :address do
+    street { Faker::Address.street_address }
+    city { Faker::Address.city }
+    state { Faker::Address.state }
+    zip_code { Faker::Address.zip_code }
+    country { Faker::Address.country }
+    
+    trait :with_coordinates do
+      latitude { Faker::Address.latitude }
+      longitude { Faker::Address.longitude }
+    end
+  end
+end
+```
+
+## Best Practices
+
+1. Data Consistency
+- Use locale-aware Faker methods when available
+- Keep data realistic and consistent
+- Use appropriate ranges for numeric values
+- Ensure generated data meets validation rules
+
+2. Performance
+```ruby
+# Cache expensive Faker calls
+FactoryBot.define do
+  factory :product do
+    # Bad: Generates new description for each association
+    description { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
+    
+    # Good: Caches description for associations
+    transient do
+      _description { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
+    end
+    description { _description }
+  end
+end
+```
+
+3. Localization
+```ruby
+# Support multiple locales
+FactoryBot.define do
+  factory :user do
+    trait :german do
+      after(:build) do |user|
+        Faker::Config.locale = "de"
+        user.first_name = Faker::Name.first_name
+        user.last_name = Faker::Name.last_name
+        Faker::Config.locale = "en"
+      end
+    end
+  end
+end
+```
+
+4. Custom Faker Classes
+```ruby
+# lib/faker/custom_company.rb
+module Faker
+  class CustomCompany < Company
+    class << self
+      def department
+        ["Sales", "Marketing", "Engineering", "Support", "HR"].sample
+      end
+      
+      def employee_title
+        "#{fetch('company.position')} #{department}"
+      end
+    end
+  end
+end
+```
+
+## Common Faker Methods
+
+1. Personal Data
+```ruby
+Faker::Name.name                 # "John Doe"
+Faker::Internet.email           # "john.doe@example.com"
+Faker::PhoneNumber.phone_number # "555-123-4567"
+Faker::Avatar.image            # "https://robohash.org/123.png"
+```
+
+2. Business Data
+```ruby
+Faker::Company.name            # "Acme Inc"
+Faker::Commerce.price          # "99.99"
+Faker::Business.credit_card_number # "4111111111111111"
+```
+
+3. Internet & Technology
+```ruby
+Faker::Internet.url            # "http://example.com"
+Faker::Internet.ip_v4_address  # "192.168.1.1"
+Faker::Internet.mac_address    # "00:00:00:00:00:00"
+```
+
+4. Date & Time
+```ruby
+Faker::Time.between(from: 2.days.ago, to: Time.now)
+Faker::Date.birthday(min_age: 18, max_age: 65)
+Faker::Time.forward(days: 23, period: :morning)
+``` 

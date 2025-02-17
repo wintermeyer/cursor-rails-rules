@@ -1,0 +1,268 @@
+# FactoryBot Standards
+
+Standards for using FactoryBot instead of fixtures in Rails 8 tests.
+Applies to: test/**/*.rb, test/factories/**/*.rb
+
+## Configuration
+
+1. Test Helper Setup
+```ruby
+# test/test_helper.rb
+ENV["RAILS_ENV"] ||= "test"
+require_relative "../config/environment"
+require "rails/test_help"
+
+class ActiveSupport::TestCase
+  # Remove fixtures
+  # self.fixture_path = "#{::Rails.root}/test/fixtures"
+  # fixtures :all
+
+  # Include FactoryBot syntax methods
+  include FactoryBot::Syntax::Methods
+  
+  # Run tests in parallel
+  parallelize(workers: :number_of_processors)
+end
+```
+
+## Factory Organization
+
+1. Directory Structure
+```
+test/factories/
+├── users.rb
+├── posts.rb
+├── comments.rb
+└── traits/
+    ├── addressable.rb
+    └── timestampable.rb
+```
+
+2. Basic Factory Structure
+```ruby
+# test/factories/users.rb
+FactoryBot.define do
+  factory :user do
+    first_name { Faker::Name.first_name }
+    last_name { Faker::Name.last_name }
+    email { Faker::Internet.email }
+    password { "password123" }
+    
+    trait :admin do
+      role { "admin" }
+      admin_since { Time.current }
+    end
+    
+    trait :inactive do
+      active { false }
+      deactivated_at { Time.current }
+    end
+    
+    factory :admin_user do
+      role { "admin" }
+      admin_since { Time.current }
+    end
+  end
+end
+```
+
+## Best Practices
+
+1. Factory Design
+- Keep factories minimal
+- Use traits for variations
+- Use sequences for unique values
+- Follow database constraints
+
+2. Naming Conventions
+- Use singular form for factory names
+- Use descriptive trait names
+- Prefix dynamic values with `with_`
+- Use verb past tense for states
+
+3. Data Generation
+- Use Faker for realistic data
+- Use sequences for unique fields
+- Use associations when needed
+- Keep data consistent
+
+4. Performance
+- Avoid unnecessary associations
+- Use build instead of create when possible
+- Use traits to minimize database hits
+- Clean up test data properly
+
+## Common Patterns
+
+1. Associations
+```ruby
+# test/factories/posts.rb
+FactoryBot.define do
+  factory :post do
+    association :user
+    title { Faker::Lorem.sentence }
+    content { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
+    
+    trait :with_comments do
+      after(:create) do |post|
+        create_list(:comment, 3, post: post)
+      end
+    end
+    
+    trait :published do
+      published_at { Time.current }
+      status { "published" }
+    end
+  end
+end
+
+# test/factories/comments.rb
+FactoryBot.define do
+  factory :comment do
+    association :user
+    association :post
+    content { Faker::Lorem.paragraph }
+  end
+end
+```
+
+2. Sequences
+```ruby
+# test/factories/products.rb
+FactoryBot.define do
+  sequence :sku do |n|
+    "PROD#{n.to_s.rjust(6, '0')}"
+  end
+  
+  factory :product do
+    name { Faker::Commerce.product_name }
+    sku
+    price { Faker::Commerce.price(range: 10..100.0) }
+    
+    trait :on_sale do
+      sale_price { price * 0.8 }
+      sale_starts_at { Time.current }
+      sale_ends_at { 7.days.from_now }
+    end
+  end
+end
+```
+
+3. Shared Traits
+```ruby
+# test/factories/traits/timestampable.rb
+FactoryBot.define do
+  trait :timestampable do
+    created_at { Time.current }
+    updated_at { Time.current }
+  end
+end
+
+# test/factories/traits/addressable.rb
+FactoryBot.define do
+  trait :addressable do
+    street { Faker::Address.street_address }
+    city { Faker::Address.city }
+    state { Faker::Address.state }
+    zip_code { Faker::Address.zip_code }
+    country { Faker::Address.country }
+  end
+end
+```
+
+## Testing Examples
+
+1. Model Tests
+```ruby
+# test/models/user_test.rb
+require "test_helper"
+
+class UserTest < ActiveSupport::TestCase
+  test "valid user" do
+    user = build(:user)
+    assert user.valid?
+  end
+  
+  test "admin user has admin privileges" do
+    admin = create(:admin_user)
+    assert admin.admin?
+    assert_not_nil admin.admin_since
+  end
+  
+  test "inactive user" do
+    user = create(:user, :inactive)
+    assert_not user.active?
+    assert_not_nil user.deactivated_at
+  end
+end
+```
+
+2. Controller Tests
+```ruby
+# test/controllers/posts_controller_test.rb
+require "test_helper"
+
+class PostsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @user = create(:user)
+    @post = create(:post, user: @user)
+    sign_in @user
+  end
+  
+  test "should get index" do
+    create_list(:post, 3, :published)
+    get posts_url
+    assert_response :success
+    assert_select ".post", count: 4  # 3 + 1 from setup
+  end
+  
+  test "should create post" do
+    assert_difference("Post.count") do
+      post posts_url, params: {
+        post: attributes_for(:post)
+      }
+    end
+    assert_redirected_to post_url(Post.last)
+  end
+end
+```
+
+3. System Tests
+```ruby
+# test/system/user_registration_test.rb
+require "application_system_test_case"
+
+class UserRegistrationTest < ApplicationSystemTestCase
+  test "user can register" do
+    user_attributes = attributes_for(:user)
+    
+    visit new_user_registration_path
+    
+    fill_in "First name", with: user_attributes[:first_name]
+    fill_in "Last name", with: user_attributes[:last_name]
+    fill_in "Email", with: user_attributes[:email]
+    fill_in "Password", with: user_attributes[:password]
+    click_button "Sign up"
+    
+    assert_text "Welcome! You have signed up successfully"
+  end
+end
+```
+
+## Helper Methods
+
+1. Custom Factory Helpers
+```ruby
+# test/support/factory_bot_helpers.rb
+module FactoryBotHelpers
+  def create_list_with_traits(factory_name, count, *traits_and_attributes)
+    traits = traits_and_attributes.extract_options!
+    create_list(factory_name, count, *traits_and_attributes, traits)
+  end
+  
+  def attributes_for_list(factory_name, count, *traits_and_attributes)
+    traits = traits_and_attributes.extract_options!
+    attributes_for_list(factory_name, count, *traits_and_attributes, traits)
+  end
+end
+``` 
