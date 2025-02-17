@@ -1,8 +1,10 @@
+---
+description: Testing Language Standards
+globs: test/**/*.rb, config/environments/test.rb, app/controllers/application_controller.rb
+---
 # Testing Language Standards
-<CURRENT_CURSOR_POSITION>
 
 Standards for language handling in tests for Rails 8.
-Applies to: test/**/*.rb, config/environments/test.rb, app/controllers/application_controller.rb
 
 ## Configuration
 

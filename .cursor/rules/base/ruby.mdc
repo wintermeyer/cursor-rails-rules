@@ -1,1 +1,289 @@
- 
+---
+description: Standards for Ruby 3.4.1 development in Rails 8.
+globs: **/*.rb
+---
+## Language Features
+
+1. Pattern Matching
+```ruby
+# Good: Use pattern matching for complex data structures
+case data
+in { user: { name:, age: Integer => age } }
+  "#{name} is #{age} years old"
+in { error: String => message }
+  "Error: #{message}"
+else
+  "Invalid data"
+end
+
+# Good: Use in pattern matching for assignments
+if request in { method: "POST", params: { user: { name:, email: } } }
+  User.create(name:, email:)
+end
+```
+
+2. Endless Methods
+```ruby
+# Good: Use for simple, single-line methods
+def full_name = "#{first_name} #{last_name}"
+def admin? = role == "admin"
+
+# Bad: Don't use for complex logic
+def complex_calculation = (base_price * tax_rate) + shipping_cost
+```
+
+3. Numbered Parameters
+```ruby
+# Good: Use for simple blocks
+[1, 2, 3].map { _1 * 2 }
+users.select { _1.active? }
+
+# Bad: Don't use when clarity suffers
+users.select { _1.orders.any? { _2.total > 100 } }
+```
+
+4. Method Arguments
+```ruby
+# Good: Use keyword arguments for clarity
+def create_user(name:, email:, role: "user")
+  User.create(name:, email:, role:)
+end
+
+# Good: Use double splat for dynamic keywords
+def process_attributes(**attrs)
+  model.update(**attrs)
+end
+```
+
+## Code Style
+
+1. Naming Conventions
+```ruby
+# Classes and Modules
+class UserAuthentication
+  module Passwordless
+  end
+end
+
+# Variables and Methods
+first_name = "John"
+def calculate_total
+end
+
+# Constants
+MAXIMUM_ATTEMPTS = 3
+DEFAULT_OPTIONS = {}.freeze
+```
+
+2. String Literals
+```ruby
+# Use double quotes for interpolation
+name = "User: #{user.name}"
+
+# Use single quotes for simple strings
+role = 'admin'
+
+# Use heredoc for multiline strings
+query = <<~SQL
+  SELECT *
+  FROM users
+  WHERE active = true
+SQL
+```
+
+3. Collections
+```ruby
+# Use %w for word arrays
+STATES = %w[draft active archived]
+
+# Use %i for symbol arrays
+ROLES = %i[admin editor user]
+
+# Use explicit array creation for mixed content
+items = [1, "two", :three]
+```
+
+4. Blocks and Procs
+```ruby
+# Use {} for single-line blocks
+names = users.map { |user| user.name }
+
+# Use do/end for multiline blocks
+users.each do |user|
+  user.recalculate_score
+  user.update_rank
+end
+
+# Use & for proc conversion
+names = users.map(&:name)
+```
+
+## Best Practices
+
+1. Method Design
+```ruby
+# Keep methods focused and small
+def process_payment
+  validate_payment
+  calculate_amount
+  charge_card
+  send_receipt
+end
+
+# Use guard clauses
+def update_user(attributes)
+  return if attributes.blank?
+  return unless user.active?
+  
+  user.update(attributes)
+end
+```
+
+2. Error Handling
+```ruby
+# Use custom errors
+class ValidationError < StandardError; end
+
+# Use meaningful rescue clauses
+begin
+  process_payment
+rescue ValidationError => e
+  handle_validation_error(e)
+rescue PaymentError => e
+  handle_payment_error(e)
+end
+```
+
+3. Object Creation
+```ruby
+# Use factory methods when appropriate
+class Report
+  def self.monthly(date)
+    new(start_date: date.beginning_of_month,
+        end_date: date.end_of_month)
+  end
+end
+
+# Use builders for complex objects
+class QueryBuilder
+  def with_status(status)
+    @status = status
+    self
+  end
+end
+```
+
+4. Metaprogramming
+```ruby
+# Use define_method for dynamic methods
+STATES.each do |state|
+  define_method "#{state}?" do
+    self.state == state
+  end
+end
+
+# Use method_missing carefully
+def method_missing(method_name, *args)
+  if method_name.to_s.start_with?("find_by_")
+    # Custom finder implementation
+  else
+    super
+  end
+end
+```
+
+## Performance
+
+1. String Operations
+```ruby
+# Use string interpolation over concatenation
+name = "#{first_name} #{last_name}"
+
+# Use frozen string literals
+# frozen_string_literal: true
+
+# Use StringIO for large string operations
+buffer = StringIO.new
+buffer << "Large "
+buffer << "String "
+buffer << "Content"
+```
+
+2. Collection Processing
+```ruby
+# Use find instead of select.first
+user = users.find { |u| u.admin? }
+
+# Use detect for better readability
+user = users.detect(&:admin?)
+
+# Use each_with_object for accumulation
+totals = orders.each_with_object({}) do |order, acc|
+  acc[order.status] ||= 0
+  acc[order.status] += order.total
+end
+```
+
+3. Memory Management
+```ruby
+# Use lazy enumerators for large collections
+large_collection.lazy
+  .select { |item| item.valid? }
+  .map { |item| item.process }
+  .take(10)
+  .force
+
+# Use batches for database operations
+User.find_each do |user|
+  user.recalculate_score
+end
+```
+
+4. Caching
+```ruby
+# Use memoization for expensive operations
+def complex_calculation
+  @complex_calculation ||= begin
+    # Expensive calculation
+  end
+end
+
+# Use class level caching when appropriate
+@cached_value = Concurrent::Map.new
+```
+
+## Testing
+
+1. RSpec Style
+```ruby
+# Use descriptive contexts
+context "when user is admin" do
+  let(:user) { create(:user, :admin) }
+  
+  it "allows access to admin panel" do
+    expect(user).to be_admin_access_allowed
+  end
+end
+```
+
+2. Minitest Style
+```ruby
+# Use assertions effectively
+def test_user_creation
+  assert_difference "User.count" do
+    User.create(valid_attributes)
+  end
+end
+```
+
+3. Mocking and Stubbing
+```ruby
+# Use mocks for external services
+service = Minitest::Mock.new
+service.expect :call, true, [params]
+
+# Use stubs for state
+user.stub :admin?, true do
+  # Test admin behavior
+end
+``` 

@@ -1,1 +1,204 @@
- 
+---
+description: Standards for using bin/rails in Rails 8.
+globs: bin/rails, lib/tasks/**/*.rake
+---
+## General Rules
+
+1. Always Use bin/rails
+- Use `bin/rails` instead of just `rails`
+- Ensures consistent environment
+- Uses project-specific binstubs
+- Avoids version conflicts
+- Maintains development parity
+
+2. Common Commands
+```bash
+# Server
+bin/rails server        # Start the Rails server
+bin/rails s -p 3001    # Start on specific port
+bin/rails s -b 0.0.0.0 # Bind to all interfaces
+
+# Console
+bin/rails console      # Start Rails console
+bin/rails c -s         # Start in sandbox mode
+bin/rails dbconsole   # Start DB console
+
+# Generation
+bin/rails generate     # List all generators
+bin/rails g model     # Generate model
+bin/rails g controller # Generate controller
+bin/rails g migration # Generate migration
+
+# Database
+bin/rails db:create   # Create database
+bin/rails db:migrate  # Run migrations
+bin/rails db:seed     # Seed database
+bin/rails db:reset    # Reset database
+
+# Testing
+bin/rails test        # Run all tests
+bin/rails test:system # Run system tests
+bin/rails test:all    # Run all test suites
+
+# Assets
+bin/rails assets:precompile # Precompile assets
+bin/rails assets:clean     # Clean old assets
+```
+
+## Custom Tasks
+
+1. Task Structure
+```ruby
+# lib/tasks/custom.rake
+namespace :custom do
+  desc "Description of task"
+  task task_name: :environment do
+    # Task implementation
+  end
+end
+```
+
+2. Task Dependencies
+```ruby
+namespace :deploy do
+  task setup: :environment do
+    # Setup tasks
+  end
+
+  task migrate: :setup do
+    # Migration tasks
+  end
+
+  task seed: :migrate do
+    # Seeding tasks
+  end
+end
+```
+
+## Best Practices
+
+1. Task Organization
+- Group related tasks
+- Use namespaces
+- Add descriptions
+- Follow naming conventions
+- Document dependencies
+
+2. Task Implementation
+- Keep tasks focused
+- Handle errors gracefully
+- Add logging/feedback
+- Use environment task
+- Follow Ruby style
+
+3. Performance
+- Optimize database access
+- Use bulk operations
+- Add progress indicators
+- Consider background jobs
+- Monitor memory usage
+
+4. Security
+- Validate user input
+- Check permissions
+- Protect sensitive data
+- Use environment variables
+- Log security events
+
+## Common Patterns
+
+1. Environment Tasks
+```ruby
+task with_logging: :environment do
+  Rails.logger = Logger.new(STDOUT)
+  # Task implementation
+end
+```
+
+2. Interactive Tasks
+```ruby
+task prompt: :environment do
+  STDOUT.puts "Continue? [y/N]"
+  input = STDIN.gets.chomp.downcase
+  exit unless input == 'y'
+end
+```
+
+3. Progress Reporting
+```ruby
+task with_progress: :environment do
+  total = Model.count
+  progress = ProgressBar.create(total: total)
+  
+  Model.find_each do |record|
+    # Process record
+    progress.increment
+  end
+end
+```
+
+4. Error Handling
+```ruby
+task safe_execution: :environment do
+  begin
+    # Task implementation
+  rescue => e
+    Rails.logger.error(e.message)
+    raise e
+  end
+end
+```
+
+## Testing
+
+1. Task Tests
+```ruby
+# test/lib/tasks/custom_task_test.rb
+require "test_helper"
+require "rake"
+
+class CustomTaskTest < ActiveSupport::TestCase
+  setup do
+    Rails.application.load_tasks
+  end
+
+  test "task executes successfully" do
+    assert_nothing_raised do
+      Rake::Task["custom:task_name"].execute
+    end
+  end
+end
+```
+
+2. Mock Interactions
+```ruby
+test "task handles user input" do
+  STDIN.expects(:gets).returns("y\n")
+  assert_nothing_raised do
+    Rake::Task["custom:interactive"].execute
+  end
+end
+```
+
+## Maintenance
+
+1. Regular Tasks
+- Review task relevance
+- Update documentation
+- Check performance
+- Monitor usage
+- Update dependencies
+
+2. Code Quality
+- Run linters
+- Add test coverage
+- Check error handling
+- Review logging
+- Update comments
+
+3. Documentation
+- Update README
+- Document new tasks
+- Add usage examples
+- Note dependencies
+- Track changes 

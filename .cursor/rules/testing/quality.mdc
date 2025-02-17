@@ -1,1 +1,250 @@
- 
+---
+description: Testing Quality Standards
+globs: test/**/*.rb
+---
+# Testing Quality Standards
+
+Standards for ensuring high-quality tests in Rails 8.
+
+## Test Coverage
+
+1. Coverage Requirements
+- Minimum 95% code coverage for models
+- Minimum 90% code coverage for controllers
+- Minimum 85% code coverage for other components
+- 100% coverage for critical business logic
+
+2. Coverage Configuration
+```ruby
+# test/test_helper.rb
+require "simplecov"
+SimpleCov.start "rails" do
+  add_filter "/test/"
+  add_filter "/config/"
+  
+  add_group "Models", "app/models"
+  add_group "Controllers", "app/controllers"
+  add_group "Mailers", "app/mailers"
+  add_group "Jobs", "app/jobs"
+  
+  minimum_coverage 90
+  minimum_coverage_by_file 80
+end
+```
+
+## Code Quality
+
+1. RuboCop Configuration
+```yaml
+# .rubocop.yml
+require:
+  - rubocop-rails
+  - rubocop-minitest
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.4
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+
+Minitest/MultipleAssertions:
+  Max: 3
+
+Minitest/AssertPredicate:
+  Enabled: true
+
+Rails/AssertNot:
+  Enabled: true
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+```
+
+2. Test Style Guidelines
+- Use consistent naming conventions
+- Keep test files organized and clean
+- Follow DRY principles for test helpers
+- Use meaningful test descriptions
+
+## Test Quality Checklist
+
+1. Test Structure
+- [ ] Tests are properly organized in directories
+- [ ] Each test file focuses on a single component
+- [ ] Test names are descriptive and follow conventions
+- [ ] Setup and teardown are properly handled
+
+2. Test Coverage
+- [ ] All public methods are tested
+- [ ] Edge cases are covered
+- [ ] Error conditions are tested
+- [ ] Complex logic has comprehensive tests
+
+3. Test Maintainability
+- [ ] Tests are easy to understand
+- [ ] Test data is properly managed
+- [ ] Shared setup is extracted to helpers
+- [ ] Tests are independent and isolated
+
+4. Test Performance
+- [ ] Tests run efficiently
+- [ ] Database interactions are minimized
+- [ ] External services are properly stubbed
+- [ ] Test suite runs in parallel when possible
+
+## Best Practices
+
+1. Test Isolation
+```ruby
+class UserTest < ActiveSupport::TestCase
+  test "creating user" do
+    # Good: Using transactional fixtures
+    assert_difference "User.count" do
+      create(:user)
+    end
+  end
+  
+  test "updating user" do
+    # Good: Each test has its own data
+    user = create(:user)
+    user.update(name: "Updated")
+    assert_equal "Updated", user.reload.name
+  end
+end
+```
+
+2. Test Data Management
+```ruby
+class OrderTest < ActiveSupport::TestCase
+  test "calculating total" do
+    # Good: Using minimal, focused test data
+    order = create(:order) do |o|
+      create(:order_item, order: o, price: 10, quantity: 2)
+      create(:order_item, order: o, price: 20, quantity: 1)
+    end
+    
+    assert_equal 40, order.total
+  end
+end
+```
+
+3. Shared Context
+```ruby
+module AuthenticationHelpers
+  def sign_in_as_admin
+    admin = create(:user, :admin)
+    sign_in admin
+    admin
+  end
+end
+
+class AdminTest < ActionDispatch::IntegrationTest
+  include AuthenticationHelpers
+  
+  test "admin can access dashboard" do
+    sign_in_as_admin
+    get admin_dashboard_path
+    assert_response :success
+  end
+end
+```
+
+4. Error Handling
+```ruby
+class ApiClientTest < ActiveSupport::TestCase
+  test "handles API errors" do
+    stub_request(:get, "https://api.example.com/data")
+      .to_return(status: 500)
+      
+    assert_raises(ApiClient::Error) do
+      ApiClient.new.fetch_data
+    end
+  end
+end
+```
+
+## Continuous Integration
+
+1. CI Configuration
+```yaml
+# .github/workflows/tests.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.1
+          bundler-cache: true
+      
+      - name: Setup test database
+        run: bundle exec rails db:setup
+        
+      - name: Run tests
+        run: |
+          bundle exec rails test
+          bundle exec rails test:system
+        
+      - name: Run RuboCop
+        run: bundle exec rubocop
+        
+      - name: Upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage/
+```
+
+## Performance Monitoring
+
+1. Test Suite Metrics
+```ruby
+# test/test_helper.rb
+require "minitest/reporters"
+require "minitest/reporters/mean_time_reporter"
+
+Minitest::Reporters.use! [
+  Minitest::Reporters::MeanTimeReporter.new,
+  Minitest::Reporters::ProgressReporter.new
+]
+```
+
+2. Slow Test Detection
+```ruby
+# test/test_helper.rb
+module TestSpeedMonitor
+  def before_setup
+    @test_start_time = Time.current
+    super
+  end
+  
+  def after_teardown
+    super
+    duration = Time.current - @test_start_time
+    if duration > 1.0
+      warn "Slow test detected: #{self.class}##{name} (#{duration.round(2)}s)"
+    end
+  end
+end
+
+class ActiveSupport::TestCase
+  include TestSpeedMonitor
+end
+``` 

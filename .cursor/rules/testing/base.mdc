@@ -1,1 +1,261 @@
- 
+---
+description: Base Testing Standards
+globs: test/**/*.rb, test/test_helper.rb, test/application_system_test_case.rb
+---
+# Base Testing Standards
+
+Standards for base testing configuration in Rails 8.
+Optional: This rule applies when any test files exist
+
+## Configuration
+
+1. Test Helper Setup
+```ruby
+# test/test_helper.rb
+ENV["RAILS_ENV"] ||= "test"
+require_relative "../config/environment"
+require "rails/test_help"
+require "minitest/mock"
+
+class ActiveSupport::TestCase
+  # Run tests in parallel with specified workers
+  parallelize(workers: :number_of_processors)
+
+  # Include FactoryBot methods
+  include FactoryBot::Syntax::Methods
+
+  # Force English locale for all tests
+  setup do
+    I18n.locale = :en
+    I18n.default_locale = :en
+    Rails.application.config.i18n.default_locale = :en
+    Rails.application.config.i18n.locale = :en
+  end
+
+  # Add custom assertions
+  def assert_valid(record)
+    assert record.valid?, record.errors.full_messages.join(", ")
+  end
+
+  def assert_invalid(record, field = nil)
+    assert_not record.valid?, "Expected record to be invalid"
+    assert record.errors[field].any? if field.present?
+  end
+end
+
+# Integration test setup
+class ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+  include Warden::Test::Helpers
+
+  setup do
+    Warden.test_mode!
+  end
+
+  teardown do
+    Warden.test_reset!
+  end
+end
+
+# System test setup
+class ActionDispatch::SystemTestCase
+  include Devise::Test::IntegrationHelpers
+  include Warden::Test::Helpers
+
+  setup do
+    Warden.test_mode!
+    Warden.test_reset!
+  end
+
+  teardown do
+    Warden.test_reset!
+  end
+end
+```
+
+2. System Test Configuration
+```ruby
+# test/application_system_test_case.rb
+require "test_helper"
+
+class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  # Use headless Chrome for system tests
+  driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
+
+  # Helper methods for system tests
+  def sign_in_as(user)
+    visit new_user_session_path
+    fill_in "Email", with: user.email
+    fill_in "Password", with: user.password
+    click_button "Sign in"
+    assert_current_path root_path
+  end
+
+  # Enhanced screenshot handling
+  def take_failed_screenshot
+    super
+    Capybara.save_page
+  end
+end
+```
+
+## Directory Structure
+
+1. Organization
+```
+test/
+├── models/              # Model tests
+├── controllers/         # Controller tests
+├── system/              # System tests
+├── mailers/             # Mailer tests
+├── jobs/                # Job tests
+├── factories/           # FactoryBot factories
+├── support/             # Support files and shared examples
+└── fixtures/            # Test fixtures (if needed)
+```
+
+2. Support Files
+```ruby
+# test/support/auth_helpers.rb
+module AuthHelpers
+  def sign_in_user
+    @user = create(:user)
+    sign_in @user
+    @user
+  end
+end
+
+class ActionDispatch::IntegrationTest
+  include AuthHelpers
+end
+```
+
+## Testing Guidelines
+
+1. Test Types
+```ruby
+# Unit Tests (Models)
+class UserTest < ActiveSupport::TestCase
+  test "validates presence of email" do
+    user = build(:user, email: nil)
+    assert_invalid user, :email
+  end
+end
+
+# Integration Tests (Controllers)
+class UsersControllerTest < ActionDispatch::IntegrationTest
+  test "creates user" do
+    assert_difference "User.count" do
+      post users_url, params: { user: attributes_for(:user) }
+    end
+  end
+end
+
+# System Tests
+class UserFlowsTest < ApplicationSystemTestCase
+  test "user signs up" do
+    visit new_user_registration_path
+    fill_in "Email", with: "user@example.com"
+    fill_in "Password", with: "password"
+    click_button "Sign up"
+    assert_text "Welcome!"
+  end
+end
+```
+
+2. Test Data
+```ruby
+# Using FactoryBot
+test "user factory" do
+  user = build(:user)
+  assert_valid user
+end
+
+# Using Traits
+test "admin user" do
+  admin = create(:user, :admin)
+  assert admin.admin?
+end
+
+# Using Faker
+test "random data" do
+  user = create(:user)
+  assert_match /\A[^@\s]+@[^@\s]+\z/, user.email
+end
+```
+
+## Best Practices
+
+1. Test Organization
+- One assertion per test when possible
+- Use descriptive test names
+- Group related tests together
+- Keep tests focused and isolated
+
+2. Performance
+```ruby
+# Parallel Testing
+parallelize(workers: :number_of_processors)
+
+# Database Cleaner Strategy
+parallelize_setup do |worker|
+  Faker::Config.random = Random.new(worker)
+end
+
+# Efficient Data Creation
+test "bulk operations" do
+  assert_difference "User.count", 3 do
+    User.insert_all(attributes_for_list(:user, 3))
+  end
+end
+```
+
+3. Error Handling
+```ruby
+test "handles errors gracefully" do
+  assert_raises ActiveRecord::RecordInvalid do
+    User.create!(email: "invalid")
+  end
+end
+
+test "displays error messages" do
+  post users_url, params: { user: { email: "invalid" } }
+  assert_response :unprocessable_entity
+  assert_includes response.body, "Email is invalid"
+end
+```
+
+## Maintenance
+
+1. Regular Tasks
+- Run full test suite before deployment
+- Monitor test coverage
+- Update test data
+- Clean up old tests
+
+2. Code Quality
+```ruby
+# Clear Test Names
+test "user can update their profile when providing valid data" do
+  # Test implementation
+end
+
+# Shared Setup
+def setup
+  super
+  @user = create(:user)
+  sign_in @user
+end
+
+# Clean Teardown
+def teardown
+  super
+  Rails.cache.clear
+end
+```
+
+3. Documentation
+- Document complex test setups
+- Explain non-obvious assertions
+- Keep test files organized
+- Update README with testing instructions 

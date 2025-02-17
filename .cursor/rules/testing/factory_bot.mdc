@@ -1,7 +1,10 @@
+---
+description: FactoryBot Standards
+globs: test/**/*.rb, test/factories/**/*.rb
+---
 # FactoryBot Standards
 
 Standards for using FactoryBot instead of fixtures in Rails 8 tests.
-Applies to: test/**/*.rb, test/factories/**/*.rb
 
 ## Configuration
 

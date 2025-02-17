@@ -1,1 +1,214 @@
- 
+---
+description: Standards for database structure and documentation in Rails 8.
+globs: app/models/**/*.rb
+---
+Optional: This rule only applies if docs/database_architecture.md exists
+
+## Documentation
+
+1. Architecture Document
+If `docs/database_architecture.md` exists:
+- Read and understand the database architecture before modifying models
+- The file contains the Entity Relationship Diagram (ERD)
+- Follow the schema defined in the ERD
+- Update the documentation when making schema changes
+
+2. Model Documentation
+```ruby
+# app/models/user.rb
+class User < ApplicationRecord
+  # Document relationships
+  # belongs_to :organization
+  # has_many :posts, dependent: :destroy
+  
+  # Document any non-obvious validations or callbacks
+  # validates :email, uniqueness: { case_sensitive: false }
+  # before_save :normalize_email
+  
+  # Document any scopes or class methods
+  # scope :active, -> { where(status: "active") }
+  # def self.search(term)
+  #   where("name ILIKE ?", "%#{term}%")
+  # end
+end
+```
+
+## Database Conventions
+
+1. Table Standards
+- Use timestamps on all tables (created_at, updated_at)
+- Use foreign key constraints for relationships
+- Add appropriate indexes for queries
+- Use consistent naming conventions
+
+2. Column Types
+```ruby
+# Good: Clear and specific types
+create_table :products do |t|
+  t.string :name, null: false
+  t.text :description
+  t.decimal :price, precision: 10, scale: 2
+  t.integer :stock_count, default: 0
+  t.datetime :published_at
+  t.boolean :featured, default: false
+  t.references :category, foreign_key: true
+  t.timestamps
+end
+```
+
+3. Naming Conventions
+```ruby
+# Tables: plural form
+create_table :users
+create_table :categories
+
+# Foreign keys: singular_model_id
+add_reference :posts, :user
+add_reference :posts, :category
+
+# Join tables: alphabetical order
+create_table :categories_products
+create_table :roles_users
+```
+
+4. Indexes
+```ruby
+# Add indexes for:
+add_index :users, :email, unique: true              # Unique constraints
+add_index :posts, :user_id                          # Foreign keys
+add_index :products, [:category_id, :published_at]  # Common queries
+add_index :orders, [:user_id, :created_at]         # Sorted lookups
+```
+
+## Relationships
+
+1. Model Structure
+```ruby
+class Post < ApplicationRecord
+  # Define relationships clearly
+  belongs_to :user
+  belongs_to :category, optional: true
+  has_many :comments, dependent: :destroy
+  has_and_belongs_to_many :tags
+  
+  # Group validations
+  validates :title, presence: true
+  validates :content, length: { minimum: 10 }
+  
+  # Group callbacks
+  before_validation :normalize_title
+  after_create :notify_subscribers
+  
+  # Group scopes
+  scope :published, -> { where.not(published_at: nil) }
+  scope :featured, -> { where(featured: true) }
+end
+```
+
+2. Common Patterns
+```ruby
+class User < ApplicationRecord
+  # Soft delete
+  include SoftDeletable
+  
+  # Enum fields
+  enum status: {
+    active: "active",
+    inactive: "inactive",
+    suspended: "suspended"
+  }
+  
+  # Rich text content
+  has_rich_text :bio
+  
+  # File attachments
+  has_one_attached :avatar
+  has_many_attached :documents
+end
+```
+
+## Data Integrity
+
+1. Validations
+```ruby
+class Order < ApplicationRecord
+  # Presence checks
+  validates :user, presence: true
+  validates :total, presence: true
+  
+  # Numerical constraints
+  validates :total, numericality: { greater_than: 0 }
+  validates :quantity, numericality: { greater_than: 0, only_integer: true }
+  
+  # Format validations
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :code, format: { with: /\A[A-Z]{2}\d{6}\z/ }
+  
+  # Custom validations
+  validate :sufficient_inventory
+  validate :valid_payment_method
+end
+```
+
+2. Callbacks
+```ruby
+class Invoice < ApplicationRecord
+  # Use callbacks sparingly and document their purpose
+  before_validation :set_default_status
+  before_save :calculate_total
+  after_create :send_notification
+  after_save :update_statistics
+  
+  private
+  
+  def calculate_total
+    # Document complex calculations
+    self.total = line_items.sum(&:subtotal)
+  end
+end
+```
+
+## Performance
+
+1. Query Optimization
+```ruby
+# Good: Efficient queries
+users = User.includes(:posts, :comments)
+                .where(active: true)
+                .order(created_at: :desc)
+                .limit(10)
+
+# Bad: N+1 queries
+users = User.all
+users.each { |user| puts user.posts.count }
+```
+
+2. Batch Processing
+```ruby
+# Good: Batch operations
+User.find_each do |user|
+  user.recalculate_statistics
+end
+
+# Good: Bulk insert
+User.insert_all(users_data)
+
+# Good: Batch updates
+User.where(active: true).in_batches do |batch|
+  batch.update_all(last_seen_at: Time.current)
+end
+```
+
+## Maintenance
+
+1. Regular Tasks
+- Monitor index usage
+- Analyze query performance
+- Clean up orphaned records
+- Update documentation
+
+2. Schema Changes
+- Use reversible migrations
+- Add appropriate indexes
+- Update related models
+- Test data integrity 

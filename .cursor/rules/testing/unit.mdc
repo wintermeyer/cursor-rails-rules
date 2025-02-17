@@ -1,1 +1,274 @@
- 
+---
+description: Unit Testing Standards
+globs: test/{models,controllers,mailers,jobs}/**/*.rb
+---
+# Unit Testing Standards
+
+Standards for unit testing in Rails 8.
+
+## Configuration
+
+1. Test Helper Setup
+```ruby
+# test/test_helper.rb
+ENV["RAILS_ENV"] ||= "test"
+require_relative "../config/environment"
+require "rails/test_help"
+require "minitest/mock"
+
+class ActiveSupport::TestCase
+  include FactoryBot::Syntax::Methods
+  parallelize(workers: :number_of_processors)
+  
+  # Add more helper methods here
+  def assert_valid(record)
+    assert record.valid?, record.errors.full_messages.join(", ")
+  end
+  
+  def assert_invalid(record)
+    assert_not record.valid?, "Expected record to be invalid"
+  end
+end
+```
+
+## Test Organization
+
+1. Directory Structure
+```
+test/
+├── models/
+│   ├── user_test.rb
+│   └── concerns/
+│       └── searchable_test.rb
+├── controllers/
+│   ├── users_controller_test.rb
+│   └── concerns/
+│       └── authenticatable_test.rb
+├── mailers/
+│   └── user_mailer_test.rb
+└── jobs/
+    └── cleanup_job_test.rb
+```
+
+## Best Practices
+
+1. Model Testing
+```ruby
+require "test_helper"
+
+class UserTest < ActiveSupport::TestCase
+  test "should be valid with valid attributes" do
+    user = build(:user)
+    assert_valid user
+  end
+  
+  test "should require email" do
+    user = build(:user, email: nil)
+    assert_invalid user
+    assert_includes user.errors[:email], "can't be blank"
+  end
+  
+  test "should have unique email" do
+    existing_user = create(:user)
+    user = build(:user, email: existing_user.email)
+    assert_invalid user
+    assert_includes user.errors[:email], "has already been taken"
+  end
+  
+  test "should validate email format" do
+    user = build(:user, email: "invalid_email")
+    assert_invalid user
+    assert_includes user.errors[:email], "is invalid"
+  end
+end
+```
+
+2. Controller Testing
+```ruby
+require "test_helper"
+
+class UsersControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @user = create(:user)
+    sign_in @user
+  end
+  
+  test "should get index" do
+    get users_url
+    assert_response :success
+    assert_not_nil assigns(:users)
+  end
+  
+  test "should create user" do
+    assert_difference("User.count") do
+      post users_url, params: { user: attributes_for(:user) }
+    end
+    assert_redirected_to user_url(User.last)
+  end
+  
+  test "should not create user with invalid params" do
+    assert_no_difference("User.count") do
+      post users_url, params: { user: attributes_for(:user, email: nil) }
+    end
+    assert_response :unprocessable_entity
+  end
+end
+```
+
+3. Mailer Testing
+```ruby
+require "test_helper"
+
+class UserMailerTest < ActionMailer::TestCase
+  test "welcome email" do
+    user = create(:user)
+    email = UserMailer.welcome(user)
+    
+    assert_emails 1 do
+      email.deliver_now
+    end
+    
+    assert_equal [user.email], email.to
+    assert_equal "Welcome to Our App", email.subject
+    assert_match user.first_name, email.body.encoded
+  end
+  
+  test "password reset email" do
+    user = create(:user)
+    user.reset_password_token = "token123"
+    email = UserMailer.password_reset(user)
+    
+    assert_emails 1 do
+      email.deliver_now
+    end
+    
+    assert_equal [user.email], email.to
+    assert_match "token123", email.body.encoded
+  end
+end
+```
+
+4. Job Testing
+```ruby
+require "test_helper"
+
+class CleanupJobTest < ActiveJob::TestCase
+  test "should enqueue job" do
+    assert_enqueued_with(job: CleanupJob) do
+      CleanupJob.perform_later
+    end
+  end
+  
+  test "should perform cleanup" do
+    create_list(:user, 3, :inactive, last_login_at: 1.year.ago)
+    
+    assert_difference "User.count", -3 do
+      perform_enqueued_jobs do
+        CleanupJob.perform_later
+      end
+    end
+  end
+end
+```
+
+## Common Patterns
+
+1. Testing Concerns
+```ruby
+require "test_helper"
+
+class SearchableTest < ActiveSupport::TestCase
+  class TestModel
+    include Searchable
+    attr_accessor :title, :description
+  end
+  
+  test "should search by title" do
+    model = TestModel.new
+    model.title = "Test Title"
+    
+    assert model.matches_search?("Test")
+    assert_not model.matches_search?("Invalid")
+  end
+end
+```
+
+2. Service Testing
+```ruby
+require "test_helper"
+
+class PaymentServiceTest < ActiveSupport::TestCase
+  setup do
+    @user = create(:user)
+    @payment_service = PaymentService.new(@user)
+  end
+  
+  test "should process payment successfully" do
+    result = @payment_service.process(amount: 100)
+    assert result.success?
+    assert_equal 100, result.amount
+  end
+  
+  test "should handle payment failure" do
+    result = @payment_service.process(amount: -1)
+    assert_not result.success?
+    assert_includes result.errors, "Invalid amount"
+  end
+end
+```
+
+3. API Testing
+```ruby
+require "test_helper"
+
+class Api::V1::UsersControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @user = create(:user)
+    @token = generate_token_for(@user)
+  end
+  
+  test "should get user profile" do
+    get api_v1_user_url(@user),
+        headers: { "Authorization" => "Bearer #{@token}" },
+        as: :json
+        
+    assert_response :success
+    assert_equal @user.email, response.parsed_body["email"]
+  end
+  
+  test "should update user profile" do
+    patch api_v1_user_url(@user),
+          params: { user: { first_name: "Updated" } },
+          headers: { "Authorization" => "Bearer #{@token}" },
+          as: :json
+          
+    assert_response :success
+    assert_equal "Updated", @user.reload.first_name
+  end
+end
+```
+
+4. Mock and Stub Examples
+```ruby
+require "test_helper"
+
+class WeatherServiceTest < ActiveSupport::TestCase
+  test "should fetch weather data" do
+    api_response = { "temperature" => 20, "condition" => "sunny" }
+    
+    HTTPClient.stub :get, api_response do
+      weather = WeatherService.new.fetch_weather("London")
+      assert_equal 20, weather.temperature
+      assert_equal "sunny", weather.condition
+    end
+  end
+  
+  test "should handle API errors" do
+    HTTPClient.stub :get, ->{ raise HTTPClient::TimeoutError } do
+      weather = WeatherService.new.fetch_weather("London")
+      assert_nil weather.temperature
+      assert_equal "unavailable", weather.condition
+    end
+  end
+end
+``` 

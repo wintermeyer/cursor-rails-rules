@@ -1,7 +1,10 @@
+---
+description: Faker Standards
+globs: test/**/*.rb, test/factories/**/*.rb
+---
 # Faker Standards
 
 Standards for using Faker gem to generate test data in Rails 8.
-Applies to: test/**/*.rb, test/factories/**/*.rb
 
 ## Configuration
 

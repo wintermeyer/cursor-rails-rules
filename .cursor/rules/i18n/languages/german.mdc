@@ -1,1 +1,147 @@
- 
+---
+description: Standards for German translations in Rails 8.
+globs: config/locales/**/*.{yml,rb}
+---
+# German Translation Standards
+
+Standards for German translations in Rails 8.
+
+## Language Guidelines
+
+1. Formal Address
+- Use "Sie" for formal address
+- Use "Ihr/Ihre" for possessive
+- Capitalize formal pronouns
+- Use proper titles (Herr/Frau)
+
+2. Grammar Rules
+- Follow German capitalization
+- Use proper quotation marks („example")
+- Use correct gender articles
+- Follow German punctuation
+
+3. Date and Time
+```yaml
+de:
+  date:
+    formats:
+      default: "%d.%m.%Y"
+      short: "%d. %b"
+      long: "%d. %B %Y"
+    day_names: [Sonntag, Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag]
+    abbr_day_names: [So, Mo, Di, Mi, Do, Fr, Sa]
+    month_names: [~, Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
+    abbr_month_names: [~, Jan, Feb, Mär, Apr, Mai, Jun, Jul, Aug, Sep, Okt, Nov, Dez]
+    
+  time:
+    formats:
+      default: "%H:%M Uhr"
+      short: "%H:%M"
+      long: "%d. %B %Y %H:%M Uhr"
+```
+
+4. Numbers and Currency
+```yaml
+de:
+  number:
+    currency:
+      format:
+        unit: "€"
+        format: "%n %u"
+        separator: ","
+        delimiter: "."
+    format:
+      separator: ","
+      delimiter: "."
+      precision: 2
+```
+
+## Common Translations
+
+1. UI Elements
+```yaml
+de:
+  common:
+    actions:
+      save: "Speichern"
+      cancel: "Abbrechen"
+      edit: "Bearbeiten"
+      delete: "Löschen"
+      back: "Zurück"
+      next: "Weiter"
+    messages:
+      confirm_delete: "Sind Sie sicher?"
+      changes_saved: "Änderungen wurden gespeichert"
+      loading: "Wird geladen..."
+```
+
+2. Form Labels
+```yaml
+de:
+  helpers:
+    label:
+      user:
+        email: "E-Mail-Adresse"
+        password: "Passwort"
+        first_name: "Vorname"
+        last_name: "Nachname"
+    hint:
+      password: "Mindestens 8 Zeichen"
+    submit:
+      create: "Erstellen"
+      update: "Aktualisieren"
+```
+
+## Error Messages
+
+1. Validation Errors
+```yaml
+de:
+  activerecord:
+    errors:
+      messages:
+        blank: "muss ausgefüllt werden"
+        taken: "ist bereits vergeben"
+        too_short: "ist zu kurz (mindestens %{count} Zeichen)"
+        invalid: "ist ungültig"
+        confirmation: "stimmt nicht mit der Bestätigung überein"
+```
+
+2. Flash Messages
+```yaml
+de:
+  flash:
+    actions:
+      create:
+        success: "%{resource_name} wurde erfolgreich erstellt"
+        error: "%{resource_name} konnte nicht erstellt werden"
+      update:
+        success: "%{resource_name} wurde erfolgreich aktualisiert"
+        error: "%{resource_name} konnte nicht aktualisiert werden"
+```
+
+## Implementation Guide
+
+1. Translation Process
+- Start with English source
+- Use professional translators
+- Review by native speakers
+- Test in context
+
+2. Quality Assurance
+- Check grammar and spelling
+- Verify formal address consistency
+- Test with German users
+- Review special characters
+
+3. Technical Considerations
+- Use UTF-8 encoding
+- Handle umlauts properly
+- Test form validations
+- Verify email templates
+
+4. Maintenance
+- Keep translations in sync
+- Document regional variations
+- Update terminology guide
+- Regular quality checks 

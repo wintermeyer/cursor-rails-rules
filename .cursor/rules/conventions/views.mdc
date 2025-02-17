@@ -1,1 +1,249 @@
- 
+---
+description: Standards for views in Rails 8.
+globs: app/views/**/*.{erb,haml}, app/helpers/**/*.rb, app/components/**/*.{rb,erb,haml}
+---
+## Structure
+
+1. Directory Organization
+```
+app/views/
+├── layouts/
+├── shared/
+├── components/
+└── [resource]/
+    ├── index.html.erb
+    ├── show.html.erb
+    ├── _form.html.erb
+    └── [action].html.erb
+```
+
+2. Naming Conventions
+- Use lowercase
+- Use underscores for spaces
+- Prefix partials with underscore
+- Use meaningful names
+- Follow resource naming
+
+## Templates
+
+1. Layout Files
+```erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for?(:title) ? yield(:title) : 'Default Title' %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "application", defer: true %>
+  </head>
+  <body>
+    <%= render "shared/header" %>
+    <main>
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+    <%= render "shared/footer" %>
+  </body>
+</html>
+```
+
+2. Index Views
+```erb
+<% content_for :title, t('.title') %>
+
+<div class="container">
+  <header class="mb-4">
+    <h1><%= t('.title') %></h1>
+    <%= link_to t('.new'), new_resource_path, class: 'button' %>
+  </header>
+
+  <%= render 'filter_form' if @filters.present? %>
+  
+  <% if @resources.any? %>
+    <%= render @resources %>
+  <% else %>
+    <%= render 'shared/empty_state' %>
+  <% end %>
+
+  <%= render 'shared/pagination', collection: @resources %>
+</div>
+```
+
+3. Show Views
+```erb
+<% content_for :title, t('.title', name: @resource.name) %>
+
+<div class="container">
+  <header class="mb-4">
+    <h1><%= t('.title', name: @resource.name) %></h1>
+    <div class="actions">
+      <%= link_to t('.edit'), edit_resource_path(@resource), class: 'button' %>
+      <%= button_to t('.delete'), resource_path(@resource), 
+          method: :delete, 
+          class: 'button button--danger',
+          data: { confirm: t('.confirm_delete') } %>
+    </div>
+  </header>
+
+  <%= render 'details', resource: @resource %>
+  <%= render 'related_resources' if @resource.related.any? %>
+</div>
+```
+
+4. Form Partials
+```erb
+<%= form_with model: @resource, class: 'form' do |f| %>
+  <%= render 'shared/error_messages', resource: @resource %>
+
+  <div class="form-group">
+    <%= f.label :attribute %>
+    <%= f.text_field :attribute, class: 'form-control' %>
+    <%= f.error_message :attribute %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit class: 'button' %>
+    <%= link_to t('.cancel'), :back, class: 'button button--secondary' %>
+  </div>
+<% end %>
+```
+
+## Components
+
+1. Component Structure
+```ruby
+# app/components/card_component.rb
+class CardComponent < ViewComponent::Base
+  def initialize(title:, content:)
+    @title = title
+    @content = content
+  end
+end
+
+# app/components/card_component.html.erb
+<div class="card">
+  <div class="card-header">
+    <h3><%= @title %></h3>
+  </div>
+  <div class="card-body">
+    <%= @content %>
+  </div>
+</div>
+```
+
+2. Component Usage
+```erb
+<%= render(CardComponent.new(title: t('.title'), content: content)) %>
+```
+
+## Helpers
+
+1. View Helpers
+```ruby
+# app/helpers/application_helper.rb
+module ApplicationHelper
+  def page_title(title = nil)
+    if title.present?
+      content_for(:title) { title }
+    else
+      content_for?(:title) ? content_for(:title) : t('common.default_title')
+    end
+  end
+
+  def format_date(date)
+    l(date, format: :long) if date.present?
+  end
+end
+```
+
+2. Form Helpers
+```ruby
+# app/helpers/form_helper.rb
+module FormHelper
+  def error_message_for(resource, attribute)
+    return unless resource.errors[attribute].any?
+
+    content_tag(:span, resource.errors[attribute].first, class: 'error-message')
+  end
+end
+```
+
+## Best Practices
+
+1. General Guidelines
+- Keep views simple and focused
+- Use partials for reusability
+- Leverage view components
+- Follow DRY principles
+- Use proper HTML semantics
+
+2. Performance
+- Cache where appropriate
+- Minimize database queries
+- Use fragment caching
+- Optimize assets
+- Lazy load when possible
+
+3. Security
+- Escape HTML by default
+- Use content_tag helpers
+- Sanitize user input
+- Protect against XSS
+- Use CSRF protection
+
+4. Accessibility
+- Use semantic HTML
+- Include ARIA attributes
+- Provide alt text
+- Ensure keyboard navigation
+- Test with screen readers
+
+## Testing
+
+1. View Tests
+```ruby
+# test/views/users/index_test.rb
+require "test_helper"
+
+class Users::IndexTest < ActionView::TestCase
+  test "displays user list" do
+    render template: "users/index"
+    
+    assert_select "h1", text: I18n.t("users.index.title")
+    assert_select ".user", count: User.count
+  end
+end
+```
+
+2. Component Tests
+```ruby
+# test/components/card_component_test.rb
+require "test_helper"
+
+class CardComponentTest < ViewComponent::TestCase
+  test "renders component" do
+    render_inline(CardComponent.new(title: "Test", content: "Content"))
+    
+    assert_selector ".card"
+    assert_selector "h3", text: "Test"
+    assert_text "Content"
+  end
+end
+```
+
+## Maintenance
+
+1. Regular Tasks
+- Review view complexity
+- Update deprecated syntax
+- Check accessibility
+- Optimize performance
+- Update dependencies
+
+2. Code Quality
+- Run linters
+- Check HTML validity
+- Verify translations
+- Test responsiveness
+- Review security 
