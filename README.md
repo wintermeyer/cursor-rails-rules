@@ -32,11 +32,28 @@ cp -r cursor-rails-rules/.cursor/* .cursor/
 rm -rf cursor-rails-rules
 ```
 
-### Option 2: Manual Download
+### Option 2: Manual Download of the ZIP file
 
-1. Download this repository as a ZIP file
-2. Extract the ZIP file
-3. Copy the `.cursor` directory from the extracted files into your Rails project root
+```bash
+# Navigate to your Rails project directory
+cd your-rails-project
+
+# Download the ZIP file
+curl -L https://github.com/wintermeyer/cursor-rails-rules/archive/refs/heads/main.zip -o cursor-rails-rules.zip
+
+# Extract the ZIP file
+unzip cursor-rails-rules.zip
+
+# Create the .cursor directory if it doesn't exist
+mkdir -p .cursor
+
+# Copy the configuration files to your project
+cp -r cursor-rails-rules-main/.cursor/* .cursor/
+
+# Clean up downloaded files
+rm cursor-rails-rules.zip
+rm -rf cursor-rails-rules-main
+```
 
 ### File Locations
 
