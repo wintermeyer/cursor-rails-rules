@@ -106,7 +106,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Author
 
 Stefan Wintermeyer <sw@wintermeyer-consulting.de>
-https://wintermeyer-consulting.de
+
+Shameless plug: I offer consulting, training and support for Ruby on Rails 
+and Cursor AI. Send me an email or visit my (German) homepage 
+at https://wintermeyer-consulting.de
 
 ---
 
