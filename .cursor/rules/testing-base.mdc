@@ -4,7 +4,7 @@ globs: test/**/*.rb, test/test_helper.rb, test/application_system_test_case.rb
 ---
 # Base Testing Standards
 
-Standards for base testing configuration in Rails 8.
+Standards for base testing configuration in Rails.
 Optional: This rule applies when any test files exist
 
 ## Configuration
@@ -258,4 +258,4 @@ end
 - Document complex test setups
 - Explain non-obvious assertions
 - Keep test files organized
-- Update README with testing instructions 
+- Update README with testing instructions

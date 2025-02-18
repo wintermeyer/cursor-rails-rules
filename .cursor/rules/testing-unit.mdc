@@ -4,7 +4,7 @@ globs: test/{models,controllers,mailers,jobs}/**/*.rb
 ---
 # Unit Testing Standards
 
-Standards for unit testing in Rails 8.
+Standards for unit testing in Rails.
 
 ## Configuration
 
@@ -19,12 +19,12 @@ require "minitest/mock"
 class ActiveSupport::TestCase
   include FactoryBot::Syntax::Methods
   parallelize(workers: :number_of_processors)
-  
+
   # Add more helper methods here
   def assert_valid(record)
     assert record.valid?, record.errors.full_messages.join(", ")
   end
-  
+
   def assert_invalid(record)
     assert_not record.valid?, "Expected record to be invalid"
   end
@@ -61,20 +61,20 @@ class UserTest < ActiveSupport::TestCase
     user = build(:user)
     assert_valid user
   end
-  
+
   test "should require email" do
     user = build(:user, email: nil)
     assert_invalid user
     assert_includes user.errors[:email], "can't be blank"
   end
-  
+
   test "should have unique email" do
     existing_user = create(:user)
     user = build(:user, email: existing_user.email)
     assert_invalid user
     assert_includes user.errors[:email], "has already been taken"
   end
-  
+
   test "should validate email format" do
     user = build(:user, email: "invalid_email")
     assert_invalid user
@@ -92,20 +92,20 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     @user = create(:user)
     sign_in @user
   end
-  
+
   test "should get index" do
     get users_url
     assert_response :success
     assert_not_nil assigns(:users)
   end
-  
+
   test "should create user" do
     assert_difference("User.count") do
       post users_url, params: { user: attributes_for(:user) }
     end
     assert_redirected_to user_url(User.last)
   end
-  
+
   test "should not create user with invalid params" do
     assert_no_difference("User.count") do
       post users_url, params: { user: attributes_for(:user, email: nil) }
@@ -123,25 +123,25 @@ class UserMailerTest < ActionMailer::TestCase
   test "welcome email" do
     user = create(:user)
     email = UserMailer.welcome(user)
-    
+
     assert_emails 1 do
       email.deliver_now
     end
-    
+
     assert_equal [user.email], email.to
     assert_equal "Welcome to Our App", email.subject
     assert_match user.first_name, email.body.encoded
   end
-  
+
   test "password reset email" do
     user = create(:user)
     user.reset_password_token = "token123"
     email = UserMailer.password_reset(user)
-    
+
     assert_emails 1 do
       email.deliver_now
     end
-    
+
     assert_equal [user.email], email.to
     assert_match "token123", email.body.encoded
   end
@@ -158,10 +158,10 @@ class CleanupJobTest < ActiveJob::TestCase
       CleanupJob.perform_later
     end
   end
-  
+
   test "should perform cleanup" do
     create_list(:user, 3, :inactive, last_login_at: 1.year.ago)
-    
+
     assert_difference "User.count", -3 do
       perform_enqueued_jobs do
         CleanupJob.perform_later
@@ -182,11 +182,11 @@ class SearchableTest < ActiveSupport::TestCase
     include Searchable
     attr_accessor :title, :description
   end
-  
+
   test "should search by title" do
     model = TestModel.new
     model.title = "Test Title"
-    
+
     assert model.matches_search?("Test")
     assert_not model.matches_search?("Invalid")
   end
@@ -202,13 +202,13 @@ class PaymentServiceTest < ActiveSupport::TestCase
     @user = create(:user)
     @payment_service = PaymentService.new(@user)
   end
-  
+
   test "should process payment successfully" do
     result = @payment_service.process(amount: 100)
     assert result.success?
     assert_equal 100, result.amount
   end
-  
+
   test "should handle payment failure" do
     result = @payment_service.process(amount: -1)
     assert_not result.success?
@@ -226,22 +226,22 @@ class Api::V1::UsersControllerTest < ActionDispatch::IntegrationTest
     @user = create(:user)
     @token = generate_token_for(@user)
   end
-  
+
   test "should get user profile" do
     get api_v1_user_url(@user),
         headers: { "Authorization" => "Bearer #{@token}" },
         as: :json
-        
+
     assert_response :success
     assert_equal @user.email, response.parsed_body["email"]
   end
-  
+
   test "should update user profile" do
     patch api_v1_user_url(@user),
           params: { user: { first_name: "Updated" } },
           headers: { "Authorization" => "Bearer #{@token}" },
           as: :json
-          
+
     assert_response :success
     assert_equal "Updated", @user.reload.first_name
   end
@@ -255,14 +255,14 @@ require "test_helper"
 class WeatherServiceTest < ActiveSupport::TestCase
   test "should fetch weather data" do
     api_response = { "temperature" => 20, "condition" => "sunny" }
-    
+
     HTTPClient.stub :get, api_response do
       weather = WeatherService.new.fetch_weather("London")
       assert_equal 20, weather.temperature
       assert_equal "sunny", weather.condition
     end
   end
-  
+
   test "should handle API errors" do
     HTTPClient.stub :get, ->{ raise HTTPClient::TimeoutError } do
       weather = WeatherService.new.fetch_weather("London")
@@ -271,4 +271,4 @@ class WeatherServiceTest < ActiveSupport::TestCase
     end
   end
 end
-``` 
+```

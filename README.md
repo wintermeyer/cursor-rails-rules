@@ -26,7 +26,7 @@ cd your-rails-project
 git clone https://github.com/wintermeyer/cursor-rails-rules.git
 
 # Copy the configuration files to your project
-cp -r cursor-rails-rules/.cursor/* .cursor/
+cp -r cursor-rails-rules/.cursor .cursor
 
 # Optional: Remove the cloned repository if you don't need it anymore
 rm -rf cursor-rails-rules

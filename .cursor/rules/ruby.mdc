@@ -1,5 +1,5 @@
 ---
-description: Standards for Ruby 3.4.1 development in Rails 8.
+description: Standards for Ruby 3.4.1 development
 globs: **/*.rb
 ---
 ## Language Features
@@ -134,7 +134,7 @@ end
 def update_user(attributes)
   return if attributes.blank?
   return unless user.active?
-  
+
   user.update(attributes)
 end
 ```
@@ -259,7 +259,7 @@ end
 # Use descriptive contexts
 context "when user is admin" do
   let(:user) { create(:user, :admin) }
-  
+
   it "allows access to admin panel" do
     expect(user).to be_admin_access_allowed
   end
@@ -286,4 +286,4 @@ service.expect :call, true, [params]
 user.stub :admin?, true do
   # Test admin behavior
 end
-``` 
+```

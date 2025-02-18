@@ -1,5 +1,5 @@
 ---
-description: Standards for internationalization in Rails 8.
+description: Standards for internationalization in Rails.
 globs: config/locales/**/*.{yml,rb}, app/**/*.{rb,erb,haml}
 ---
 # Base I18n Standards
@@ -151,4 +151,4 @@ t('.not_found', scope: 'controllers.users')
 - Maintain translation guide
 - Document special cases
 - Keep locale list updated
-- Track translation versions 
+- Track translation versions

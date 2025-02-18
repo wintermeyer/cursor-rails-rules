@@ -1,10 +1,10 @@
 ---
-description: Standards for German translations in Rails 8.
+description: Standards for German translations in Rails.
 globs: config/locales/**/*.{yml,rb}
 ---
 # German Translation Standards
 
-Standards for German translations in Rails 8.
+Standards for German translations in Rails.
 
 ## Language Guidelines
 
@@ -32,7 +32,7 @@ de:
     abbr_day_names: [So, Mo, Di, Mi, Do, Fr, Sa]
     month_names: [~, Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
     abbr_month_names: [~, Jan, Feb, Mär, Apr, Mai, Jun, Jul, Aug, Sep, Okt, Nov, Dez]
-    
+
   time:
     formats:
       default: "%H:%M Uhr"
@@ -144,4 +144,4 @@ de:
 - Keep translations in sync
 - Document regional variations
 - Update terminology guide
-- Regular quality checks 
+- Regular quality checks

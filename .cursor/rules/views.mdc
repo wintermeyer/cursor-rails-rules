@@ -1,5 +1,5 @@
 ---
-description: Standards for views in Rails 8.
+description: Standards for views in Rails.
 globs: app/views/**/*.{erb,haml}, app/helpers/**/*.rb, app/components/**/*.{rb,erb,haml}
 ---
 ## Structure
@@ -59,7 +59,7 @@ app/views/
   </header>
 
   <%= render 'filter_form' if @filters.present? %>
-  
+
   <% if @resources.any? %>
     <%= render @resources %>
   <% else %>
@@ -79,8 +79,8 @@ app/views/
     <h1><%= t('.title', name: @resource.name) %></h1>
     <div class="actions">
       <%= link_to t('.edit'), edit_resource_path(@resource), class: 'button' %>
-      <%= button_to t('.delete'), resource_path(@resource), 
-          method: :delete, 
+      <%= button_to t('.delete'), resource_path(@resource),
+          method: :delete,
           class: 'button button--danger',
           data: { confirm: t('.confirm_delete') } %>
     </div>
@@ -209,7 +209,7 @@ require "test_helper"
 class Users::IndexTest < ActionView::TestCase
   test "displays user list" do
     render template: "users/index"
-    
+
     assert_select "h1", text: I18n.t("users.index.title")
     assert_select ".user", count: User.count
   end
@@ -224,7 +224,7 @@ require "test_helper"
 class CardComponentTest < ViewComponent::TestCase
   test "renders component" do
     render_inline(CardComponent.new(title: "Test", content: "Content"))
-    
+
     assert_selector ".card"
     assert_selector "h3", text: "Test"
     assert_text "Content"
@@ -246,4 +246,4 @@ end
 - Check HTML validity
 - Verify translations
 - Test responsiveness
-- Review security 
+- Review security
