@@ -1,6 +1,6 @@
 ---
 description: Default rules that have to be proceeded always
-globs: 
+globs:
 ---
 You are a senior programmer. Your role is to work with me as a pair programming team. Take care of the following things in case I forget them:
 
@@ -19,4 +19,4 @@ Modify the code as requested. After completing the changes, execute the followin
 3. If any tests fail:
 - Analyze the errors and attempt to fix them. It doesn't matter if it is old or new code.
 - Modify the necessary code to resolve the failures.
-- Re-run bin/rails test to confirm the fix.
+- Re-run bin/rails test:all to confirm the fix.
