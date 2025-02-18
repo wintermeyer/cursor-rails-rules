@@ -1,6 +1,6 @@
 # Cursor Ruby on Rails Rules
 
-A collection of opinionated rules and configurations for the [Cursor AI Code Editor](https://www.cursor.com) to enhance the development experience of Ruby on Rails developers. **The Cursor agent becomes your pair programming teammate and senior Rails expert.**
+A collection of opinionated rules and configurations for the [Cursor AI Code Editor](https://www.cursor.com) to speed up and enhance the development experience of Ruby on Rails developers. **The Cursor agent becomes your pair programming teammate and senior Rails expert.**
 
 ## Benefits
 
