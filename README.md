@@ -1,15 +1,12 @@
 # Cursor Ruby on Rails Rules
 
-A collection of opinionated rules and configurations for the [Cursor AI Code Editor](https://www.cursor.com) to enhance the development experience of Ruby on Rails developers.
-
-## Overview
-
-This project provides a curated set of rules and configurations for the Cursor IDE specifically tailored for Ruby on Rails development. These rules are designed to improve development speed, maintain code quality, and provide a more efficient workflow for Rails developers.
+A collection of opinionated rules and configurations for the [Cursor AI Code Editor](https://www.cursor.com) to enhance the development experience of Ruby on Rails developers. **The Cursor agent becomes your pair programming teammate and senior Rails expert.**
 
 ## Benefits
 
 - Increased development speed
 - Streamlined workflow for common Rails tasks
+- Automated testing and use of RuboCop
 - I18n support
 
 ## Getting Started
