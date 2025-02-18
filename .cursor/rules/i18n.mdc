@@ -4,7 +4,16 @@ globs: config/locales/**/*.{yml,rb}, app/**/*.{rb,erb,haml}
 ---
 # Base I18n Standards
 
-Standards for internationalization in Rails 8.
+Standards for internationalization in Rails. We always assume that the
+application supports multiple languages and locales. By default we go with
+English as the primary language and German as the secondary language.
+
+Check if the 'rails-i18n' gem is installed. If not add it to the Gemfile:
+
+    gem 'rails-i18n', '~> 8.0.0'
+
+and run a `bundle install`.
+
 
 ## Configuration
 
