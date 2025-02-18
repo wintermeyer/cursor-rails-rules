@@ -11,7 +11,7 @@ A collection of opinionated rules and configurations for the [Cursor AI Code Edi
 
 ## Getting Started
 
-> !NOTE:
+> [!NOTE]
 > Create a new Rails projekt with `rails new AbcExample --css tailwind`
 
 To use these Cursor rules in your Ruby on Rails project:
