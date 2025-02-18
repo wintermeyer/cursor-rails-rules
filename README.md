@@ -69,6 +69,8 @@ Restart Cursor to be on the safe side.
 
 This is a community project, and we believe that the best rules and configurations come from real-world experience. **Whether you're a seasoned Rails developer or just getting started, your input is valuable!**
 
+The official rules documentation can be found at https://docs.cursor.com/context/rules-for-ai
+
 Here's how you can contribute:
 - Suggest improvements to existing rules
 - Add new rules that have helped your team
