@@ -62,7 +62,6 @@ The configuration files should be placed in the following locations within your 
 ```
 your-rails-project/
 ├── .cursor/           # Cursor configuration directory
-│   ├── settings.json  # Main settings file
 │   └── rules/         # Custom rules directory
 └── ... rest of your Rails project
 ```
@@ -71,7 +70,7 @@ Restart Cursor to be on the safe side.
 
 ## Contributing
 
-This is a community project, and we believe that the best rules and configurations come from real-world experience. Whether you're a seasoned Rails developer or just getting started, your input is valuable!
+This is a community project, and we believe that the best rules and configurations come from real-world experience. **Whether you're a seasoned Rails developer or just getting started, your input is valuable!**
 
 Here's how you can contribute:
 - Suggest improvements to existing rules
@@ -89,7 +88,7 @@ To contribute code changes:
 4. Push to the branch
 5. Open a Pull Request
 
-Not familiar with forking repositories? No problem! You can still contribute by creating a GitHub issue:
+*Not familiar with forking repositories?* No problem! You can still contribute by creating a GitHub issue:
 1. Click on the "Issues" tab at the top of this repository
 2. Click the green "New issue" button
 3. Choose between:
