@@ -12,7 +12,7 @@ A collection of opinionated rules and configurations for the [Cursor AI Code Edi
 ## Getting Started
 
 > [!NOTE]
-> Create a new Rails projekt with `rails new AbcExample --css tailwind`
+> If you don't have an existing Rails project create one with `rails new your-rails-project --css tailwind`
 
 To use these Cursor rules in your Ruby on Rails project:
 
