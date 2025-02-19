@@ -1,5 +1,5 @@
 ---
-description: Standards for German translations in Rails.
+description: Guidelines for German translations
 globs: config/locales/**/*.{yml,rb}
 ---
 # German Translation Standards

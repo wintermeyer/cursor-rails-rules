@@ -4,7 +4,7 @@ globs: test/**/*.rb, config/environments/test.rb, app/controllers/application_co
 ---
 # Testing Language Standards
 
-Standards for language handling in tests for Rails 8.
+Standards for language handling in tests
 
 ## Configuration
 
@@ -15,10 +15,10 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel
     parallelize(workers: :number_of_processors)
-    
+
     # Include FactoryBot syntax methods
     include FactoryBot::Syntax::Methods
-    
+
     # Force English locale for all tests
     setup do
       I18n.locale = :en
@@ -27,7 +27,7 @@ module ActiveSupport
       Rails.application.config.i18n.locale = :en
       Rails.application.config.i18n.available_locales = [:en, :de]
     end
-    
+
     teardown do
       I18n.locale = :en
     end
@@ -40,9 +40,9 @@ end
 # app/controllers/application_controller.rb
 class ApplicationController < ActionController::Base
   before_action :set_locale
-  
+
   private
-  
+
   def set_locale
     return if Rails.env.test? # Skip locale detection in test environment
     I18n.locale = extract_locale_from_accept_language_header || I18n.default_locale
@@ -62,7 +62,7 @@ FactoryBot.define do
     email { Faker::Internet.email }
     password { "password123" }
     lang { "en" }  # Default to English
-    
+
     trait :german do
       lang { "de" }
       after(:build) do |user|
@@ -85,15 +85,15 @@ end
 class ArticleTest < ActiveSupport::TestCase
   test "article title is translated" do
     article = create(:article, title_en: "English Title", title_de: "Deutscher Titel")
-    
+
     # Always test English first
     assert_equal "English Title", article.title
-    
+
     # Test other languages explicitly
     I18n.with_locale(:de) do
       assert_equal "Deutscher Titel", article.title
     end
-    
+
     # Reset to English
     assert_equal "English Title", article.title
   end
@@ -108,11 +108,11 @@ class LocalizationTest < ApplicationSystemTestCase
     # Create German user
     user = create(:user, :german)
     sign_in(user)
-    
+
     # Test German content
     visit root_path
     assert_text "Willkommen"  # German welcome message
-    
+
     # Switch to English
     user.update!(lang: "en")
     visit root_path
@@ -154,17 +154,17 @@ end
 # test/models/product_test.rb
 class ProductTest < ActiveSupport::TestCase
   test "product has translations" do
-    product = create(:product, 
-      name_en: "Laptop", 
+    product = create(:product,
+      name_en: "Laptop",
       name_de: "Laptop",
       description_en: "Powerful laptop",
       description_de: "Leistungsstarker Laptop"
     )
-    
+
     # Test English (default)
     assert_equal "Laptop", product.name
     assert_equal "Powerful laptop", product.description
-    
+
     # Test German
     I18n.with_locale(:de) do
       assert_equal "Laptop", product.name
@@ -181,20 +181,20 @@ class LanguageSwitchingTest < ApplicationSystemTestCase
   test "user can switch language" do
     user = create(:user)
     sign_in(user)
-    
+
     visit edit_user_registration_path
-    
+
     # Switch to German
     select "Deutsch", from: "Language"
     click_button "Update"
-    
+
     assert_equal "de", user.reload.lang
     assert_text "Profil erfolgreich aktualisiert"
-    
+
     # Switch back to English
     select "English", from: "Sprache"
     click_button "Aktualisieren"
-    
+
     assert_equal "en", user.reload.lang
     assert_text "Profile successfully updated"
   end
@@ -206,19 +206,19 @@ end
 # test/controllers/api/v1/products_controller_test.rb
 class Api::V1::ProductsControllerTest < ActionDispatch::IntegrationTest
   test "returns product in requested language" do
-    product = create(:product, 
+    product = create(:product,
       name_en: "Laptop",
       name_de: "Laptop",
       description_en: "Powerful laptop",
       description_de: "Leistungsstarker Laptop"
     )
-    
+
     # Test English response
     get api_v1_product_url(product), headers: { "Accept-Language": "en" }
     assert_response :success
     assert_equal "Laptop", response.parsed_body["name"]
     assert_equal "Powerful laptop", response.parsed_body["description"]
-    
+
     # Test German response
     get api_v1_product_url(product), headers: { "Accept-Language": "de" }
     assert_response :success
@@ -234,17 +234,17 @@ end
 class FormValidationsTest < ApplicationSystemTestCase
   test "shows validation errors in user's language" do
     visit new_user_registration_path
-    
+
     # Test English validation messages
     click_button "Sign up"
     assert_text "Email can't be blank"
-    
+
     # Test German validation messages
     user = create(:user, :german)
     sign_in(user)
-    
+
     visit new_article_path
     click_button "Create Article"
     assert_text "Titel muss ausgefüllt werden"
   end
-end 
+end

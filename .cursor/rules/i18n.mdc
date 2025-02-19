@@ -1,19 +1,18 @@
 ---
-description: Standards for internationalization in Rails.
+description: Guidelines for internationalization
 globs: config/locales/**/*.{yml,rb}, app/**/*.{rb,erb,haml}
 ---
 # Base I18n Standards
 
-Standards for internationalization in Rails. We always assume that the
-application supports multiple languages and locales. By default we go with
-English as the primary language and German as the secondary language.
+We always assume that the application supports multiple languages
+and locales. By default we go with English as the primary language
+and German as the secondary language.
 
 Check if the 'rails-i18n' gem is installed. If not add it to the Gemfile:
 
     gem 'rails-i18n', '~> 8.0.0'
 
 and run a `bundle install`.
-
 
 ## Configuration
 
@@ -148,16 +147,8 @@ t('.not_found', scope: 'controllers.users')
 - Update missing translations
 - Remove unused keys
 - Verify key consistency
-- Check translation quality
 
-2. Tools
-- Use i18n-tasks gem
-- Implement missing translation handlers
-- Set up automated checks
-- Monitor translation coverage
-
-3. Documentation
-- Maintain translation guide
+2. Documentation
 - Document special cases
 - Keep locale list updated
 - Track translation versions

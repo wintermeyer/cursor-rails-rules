@@ -4,29 +4,8 @@ globs: test/**/*.rb, test/factories/**/*.rb
 ---
 # FactoryBot Standards
 
-Standards for using FactoryBot instead of fixtures in Rails 8 tests.
-
-## Configuration
-
-1. Test Helper Setup
-```ruby
-# test/test_helper.rb
-ENV["RAILS_ENV"] ||= "test"
-require_relative "../config/environment"
-require "rails/test_help"
-
-class ActiveSupport::TestCase
-  # Remove fixtures
-  # self.fixture_path = "#{::Rails.root}/test/fixtures"
-  # fixtures :all
-
-  # Include FactoryBot syntax methods
-  include FactoryBot::Syntax::Methods
-  
-  # Run tests in parallel
-  parallelize(workers: :number_of_processors)
-end
-```
+Uwe FactoryBot instead of fixtures in Rails tests.
+Install the `factory_bot` gem if not already included in the Gemfile.
 
 ## Factory Organization
 
@@ -50,17 +29,17 @@ FactoryBot.define do
     last_name { Faker::Name.last_name }
     email { Faker::Internet.email }
     password { "password123" }
-    
+
     trait :admin do
       role { "admin" }
       admin_since { Time.current }
     end
-    
+
     trait :inactive do
       active { false }
       deactivated_at { Time.current }
     end
-    
+
     factory :admin_user do
       role { "admin" }
       admin_since { Time.current }
@@ -105,13 +84,13 @@ FactoryBot.define do
     association :user
     title { Faker::Lorem.sentence }
     content { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
-    
+
     trait :with_comments do
       after(:create) do |post|
         create_list(:comment, 3, post: post)
       end
     end
-    
+
     trait :published do
       published_at { Time.current }
       status { "published" }
@@ -136,12 +115,12 @@ FactoryBot.define do
   sequence :sku do |n|
     "PROD#{n.to_s.rjust(6, '0')}"
   end
-  
+
   factory :product do
     name { Faker::Commerce.product_name }
     sku
     price { Faker::Commerce.price(range: 10..100.0) }
-    
+
     trait :on_sale do
       sale_price { price * 0.8 }
       sale_starts_at { Time.current }
@@ -185,13 +164,13 @@ class UserTest < ActiveSupport::TestCase
     user = build(:user)
     assert user.valid?
   end
-  
+
   test "admin user has admin privileges" do
     admin = create(:admin_user)
     assert admin.admin?
     assert_not_nil admin.admin_since
   end
-  
+
   test "inactive user" do
     user = create(:user, :inactive)
     assert_not user.active?
@@ -211,14 +190,14 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     @post = create(:post, user: @user)
     sign_in @user
   end
-  
+
   test "should get index" do
     create_list(:post, 3, :published)
     get posts_url
     assert_response :success
     assert_select ".post", count: 4  # 3 + 1 from setup
   end
-  
+
   test "should create post" do
     assert_difference("Post.count") do
       post posts_url, params: {
@@ -238,15 +217,15 @@ require "application_system_test_case"
 class UserRegistrationTest < ApplicationSystemTestCase
   test "user can register" do
     user_attributes = attributes_for(:user)
-    
+
     visit new_user_registration_path
-    
+
     fill_in "First name", with: user_attributes[:first_name]
     fill_in "Last name", with: user_attributes[:last_name]
     fill_in "Email", with: user_attributes[:email]
     fill_in "Password", with: user_attributes[:password]
     click_button "Sign up"
-    
+
     assert_text "Welcome! You have signed up successfully"
   end
 end
@@ -262,10 +241,10 @@ module FactoryBotHelpers
     traits = traits_and_attributes.extract_options!
     create_list(factory_name, count, *traits_and_attributes, traits)
   end
-  
+
   def attributes_for_list(factory_name, count, *traits_and_attributes)
     traits = traits_and_attributes.extract_options!
     attributes_for_list(factory_name, count, *traits_and_attributes, traits)
   end
 end
-``` 
+```

@@ -1,12 +1,13 @@
 ---
-description: Default rules that have to be proceeded always
+description: Default Guideline for this project
 globs:
 ---
 You are a senior programmer. Your role is to work with me as a pair programming team. Take care of the following things in case I forget them:
 
-- When possible we always create at least a basic test to check the functionality we just implimented or fixed. So if I e.g. create a new page we have to write a basic test that checks that that page answers with a 200 HTTP code.
+- When possible we always create at least one happy path test to check the functionality we just implimented or fixed. So if I e.g. create a new page we have to write a basic test that checks that that page answers with a 200 HTTP code.
+- Always use `i18n.mdc` since this is a multilanguage project.
 
-Modify the code as requested. After completing the changes, execute the following commands in the terminal:
+Modify or create the code as requested. After completing the changes, execute the following commands in the terminal:
 
 1. Run tests to ensure everything still works:
    ```sh

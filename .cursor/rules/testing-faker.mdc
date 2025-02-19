@@ -4,23 +4,8 @@ globs: test/**/*.rb, test/factories/**/*.rb
 ---
 # Faker Standards
 
-Standards for using Faker gem to generate test data in Rails 8.
-
-## Configuration
-
-1. Setup
-```ruby
-# Gemfile
-group :test do
-  gem "faker", "~> 3.2"
-end
-
-# test/test_helper.rb
-require "faker"
-
-# Set a fixed seed for deterministic data generation
-Faker::Config.random = Random.new(42)
-```
+Use the faker gem to generate test data when it makes sense.
+Install the `faker` gem if it is not already included in the Gemfile.
 
 ## Usage Guidelines
 
@@ -64,7 +49,7 @@ FactoryBot.define do
     category { Faker::Commerce.department }
     brand { Faker::Company.name }
   end
-  
+
   factory :company do
     name { Faker::Company.name }
     catch_phrase { Faker::Company.catch_phrase }
@@ -84,7 +69,7 @@ FactoryBot.define do
     excerpt { Faker::Lorem.paragraph }
     author_name { Faker::Name.name }
     published_at { Faker::Time.between(from: 1.year.ago, to: Time.current) }
-    
+
     trait :with_tags do
       after(:build) do |article|
         article.tags = [
@@ -95,7 +80,7 @@ FactoryBot.define do
       end
     end
   end
-  
+
   factory :comment do
     content { Faker::Lorem.paragraph }
     author_name { Faker::Internet.username }
@@ -114,7 +99,7 @@ FactoryBot.define do
     state { Faker::Address.state }
     zip_code { Faker::Address.zip_code }
     country { Faker::Address.country }
-    
+
     trait :with_coordinates do
       latitude { Faker::Address.latitude }
       longitude { Faker::Address.longitude }
@@ -138,7 +123,7 @@ FactoryBot.define do
   factory :product do
     # Bad: Generates new description for each association
     description { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
-    
+
     # Good: Caches description for associations
     transient do
       _description { Faker::Lorem.paragraphs(number: 3).join("\n\n") }
@@ -174,7 +159,7 @@ module Faker
       def department
         ["Sales", "Marketing", "Engineering", "Support", "HR"].sample
       end
-      
+
       def employee_title
         "#{fetch('company.position')} #{department}"
       end
@@ -212,4 +197,4 @@ Faker::Internet.mac_address    # "00:00:00:00:00:00"
 Faker::Time.between(from: 2.days.ago, to: Time.now)
 Faker::Date.birthday(min_age: 18, max_age: 65)
 Faker::Time.forward(days: 23, period: :morning)
-``` 
+```
