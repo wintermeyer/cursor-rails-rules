@@ -4,8 +4,8 @@ globs: test/**/*.rb, test/factories/**/*.rb
 ---
 # FactoryBot Standards
 
-Uwe FactoryBot instead of fixtures in Rails tests.
-Install the `factory_bot` gem if not already included in the Gemfile.
+Use FactoryBot rather than fixtures in Rails tests.
+Install the `factory_bot` gem if it is not already included in the Gemfile.
 
 ## Factory Organization
 
@@ -70,8 +70,8 @@ end
 
 4. Performance
 - Avoid unnecessary associations
-- Use build instead of create when possible
-- Use traits to minimize database hits
+- Use `build` instead of `create` when possible
+- Use `traits` to minimize database hits
 - Clean up test data properly
 
 ## Common Patterns
